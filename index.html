@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фото в канал</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .upload-area {
+            border: 2px dashed var(--tg-theme-hint-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        button {
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .caption-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Отправить фото в канал</h2>
+
+    <div id="uploadArea" class="upload-area">
+        <p>Нажмите для выбора фото или перетащите сюда</p>
+        <img id="previewImage" class="preview-image" alt="Предпросмотр">
+    </div>
+
+    <input type="text" id="captionInput" class="caption-input" placeholder="Добавьте подпись (необязательно)">
+
+    <button id="sendButton">Отправить в канал</button>
+</div>
+
+<script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Здесь будет основной код приложения
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем элементы DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const previewImage = document.getElementById('previewImage');
+        const captionInput = document.getElementById('captionInput');
+        const sendButton = document.getElementById('sendButton');
+
+        let selectedFile = null;
+
+        // Обработчик клика по области загрузки
+        uploadArea.addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = handleFileSelect;
+            fileInput.click();
+        });
+
+        // Обработчик перетаскивания файла
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--tg-theme-link-color)';
+        });
+
+        uploadArea.addEventListener('dragleave', function() {
+            uploadArea.style.borderColor = 'var(--tg-theme-hint-color)';
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--tg-theme-hint-color)';
+
+            if (e.dataTransfer.files.length) {
+                handleFileSelect({ target: { files: e.dataTransfer.files } });
+            }
+        });
+
+        // Обработчик выбора файла
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file.type.match('image.*')) {
+                alert('Пожалуйста, выберите изображение');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Показываем превью
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                uploadArea.querySelector('p').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Обработчик отправки
+        sendButton.addEventListener('click', function() {
+            if (!selectedFile) {
+                alert('Пожалуйста, выберите фото');
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            tg.showPopup({
+                title: 'Отправка',
+                message: 'Фото отправляется...',
+                buttons: []
+            }, function() {});
+
+            // Здесь будет код отправки на сервер
+            sendPhotoToChannel(selectedFile, captionInput.value);
+        });
+
+        // Функция отправки фото на сервер
+        async function sendPhotoToChannel(file, caption) {
+            // В реальном приложении здесь будет запрос к вашему серверу
+            // который отправит фото в Telegram канал через Bot API
+
+            try {
+                // Пример реализации с использованием FormData
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('caption', caption);
+                formData.append('user_id', tg.initDataUnsafe.user?.id || '');
+
+                // Отправляем данные на ваш сервер
+                const response = await fetch('YOUR_SERVER_ENDPOINT', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    tg.showPopup({
+                        title: 'Успех',
+                        message: 'Фото успешно отправлено в канал!',
+                        buttons: [{ type: 'ok' }]
+                    }, function() {
+                        tg.close();
+                    });
+                } else {
+                    throw new Error(result.error || 'Неизвестная ошибка');
+                }
+            } catch (error) {
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось отправить фото: ' + error.message,
+                    buttons: [{ type: 'ok' }]
+                }, function() {});
+            }
+        }
+    });
+</script>
+</body>
+</html>

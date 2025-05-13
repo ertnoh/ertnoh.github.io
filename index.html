@@ -1,193 +1,345 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фото в канал</title>
+    <title>Форма загрузки фотосъемки</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --hint-color: var(--tg-theme-hint-color, #707579);
+            --button-color: var(--tg-theme-button-color, #2481cc);
+            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --error-color: #ff3b30;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
+            line-height: 1.5;
         }
+
         .container {
+            max-width: 100%;
             padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
+            box-sizing: border-box;
         }
+
+        h1 {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .required:after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--hint-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
         .upload-area {
-            border: 2px dashed var(--tg-theme-hint-color);
-            border-radius: 10px;
-            padding: 30px;
+            border: 2px dashed var(--hint-color);
+            border-radius: 12px;
+            padding: 30px 20px;
             text-align: center;
             margin-bottom: 20px;
             cursor: pointer;
+            transition: border-color 0.2s;
         }
-        .preview-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            margin-top: 15px;
+
+        .upload-area:hover {
+            border-color: var(--button-color);
+        }
+
+        .preview-container {
+            position: relative;
+            margin-bottom: 20px;
             display: none;
         }
-        button {
-            background-color: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
             width: 100%;
+            font-weight: 500;
+            transition: opacity 0.2s;
         }
-        .caption-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--tg-theme-hint-color);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Отправить фото в канал</h2>
+    <h1>Добавить фотосъемку</h1>
 
-    <div id="uploadArea" class="upload-area">
-        <p>Нажмите для выбора фото или перетащите сюда</p>
-        <img id="previewImage" class="preview-image" alt="Предпросмотр">
-    </div>
+    <form id="photoForm">
+        <!-- Обязательное поле -->
+        <div class="form-group">
+            <label for="titleInput" class="required">Название съемки</label>
+            <input type="text" id="titleInput" placeholder="Введите название съемки" required>
+            <div id="titleError" class="error-message">Это поле обязательно для заполнения</div>
+        </div>
 
-    <input type="text" id="captionInput" class="caption-input" placeholder="Добавьте подпись (необязательно)">
+        <!-- Необязательные поля -->
+        <div class="form-group">
+            <label for="authorInput">Автор</label>
+            <input type="text" id="authorInput" placeholder="Имя автора (необязательно)">
+        </div>
 
-    <button id="sendButton">Отправить в канал</button>
+        <div class="form-group">
+            <label for="dateInput">Дата съемки</label>
+            <input type="date" id="dateInput">
+        </div>
+
+        <div class="form-group">
+            <label for="tagsInput">Теги</label>
+            <input type="text" id="tagsInput" placeholder="тег1, тег2, тег3 (необязательно)">
+        </div>
+
+        <div class="form-group">
+            <label for="descriptionInput">Описание</label>
+            <textarea id="descriptionInput" placeholder="Добавьте описание съемки (необязательно)"></textarea>
+        </div>
+
+        <!-- Загрузка фото -->
+        <div class="form-group">
+            <label>Фото</label>
+            <div id="uploadArea" class="upload-area">
+                <div>📷</div>
+                <p>Нажмите для выбора фото или перетащите сюда</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+
+            <div id="previewContainer" class="preview-container">
+                <img id="previewImage" class="preview-image" alt="Предпросмотр">
+                <button type="button" id="removeBtn" class="remove-btn">×</button>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="submit-btn" disabled>Отправить</button>
+    </form>
 </div>
 
 <script>
     // Инициализация Telegram WebApp
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.enableClosingConfirmation();
 
-    // Здесь будет основной код приложения
-    document.addEventListener('DOMContentLoaded', function() {
-        // Получаем элементы DOM
-        const uploadArea = document.getElementById('uploadArea');
-        const previewImage = document.getElementById('previewImage');
-        const captionInput = document.getElementById('captionInput');
-        const sendButton = document.getElementById('sendButton');
+    // Элементы DOM
+    const form = document.getElementById('photoForm');
+    const titleInput = document.getElementById('titleInput');
+    const authorInput = document.getElementById('authorInput');
+    const dateInput = document.getElementById('dateInput');
+    const tagsInput = document.getElementById('tagsInput');
+    const descriptionInput = document.getElementById('descriptionInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const removeBtn = document.getElementById('removeBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const titleError = document.getElementById('titleError');
 
-        let selectedFile = null;
+    // Состояние приложения
+    let selectedFile = null;
 
-        // Обработчик клика по области загрузки
-        uploadArea.addEventListener('click', function() {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            fileInput.onchange = handleFileSelect;
-            fileInput.click();
-        });
+    // Обработчики событий
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+    removeBtn.addEventListener('click', removeSelectedFile);
+    titleInput.addEventListener('input', validateForm);
+    form.addEventListener('submit', submitForm);
 
-        // Обработчик перетаскивания файла
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'var(--tg-theme-link-color)';
-        });
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = 'var(--button-color)';
+    });
 
-        uploadArea.addEventListener('dragleave', function() {
-            uploadArea.style.borderColor = 'var(--tg-theme-hint-color)';
-        });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = 'var(--hint-color)';
+    });
 
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'var(--tg-theme-hint-color)';
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = 'var(--hint-color)';
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect({ target: fileInput });
+        }
+    });
 
-            if (e.dataTransfer.files.length) {
-                handleFileSelect({ target: { files: e.dataTransfer.files } });
-            }
-        });
+    // Функции
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-        // Обработчик выбора файла
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file.type.match('image.*')) {
-                alert('Пожалуйста, выберите изображение');
-                return;
-            }
-
-            selectedFile = file;
-
-            // Показываем превью
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-                uploadArea.querySelector('p').textContent = file.name;
-            };
-            reader.readAsDataURL(file);
+        if (!file.type.match('image.*')) {
+            showError('Пожалуйста, выберите изображение');
+            return;
         }
 
-        // Обработчик отправки
-        sendButton.addEventListener('click', function() {
-            if (!selectedFile) {
-                alert('Пожалуйста, выберите фото');
-                return;
+        if (file.size > 10 * 1024 * 1024) {
+            showError('Размер файла не должен превышать 10 МБ');
+            return;
+        }
+
+        selectedFile = file;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewContainer.style.display = 'block';
+            uploadArea.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+
+        validateForm();
+    }
+
+    function removeSelectedFile() {
+        selectedFile = null;
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        uploadArea.style.display = 'block';
+        validateForm();
+    }
+
+    function validateForm() {
+        const isTitleValid = titleInput.value.trim().length > 0;
+
+        titleError.style.display = isTitleValid ? 'none' : 'block';
+        submitBtn.disabled = !isTitleValid;
+
+        return isTitleValid;
+    }
+
+    function showError(message) {
+        tg.showPopup({
+            title: 'Ошибка',
+            message: message,
+            buttons: [{ type: 'ok' }]
+        });
+    }
+
+    async function submitForm(e) {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        tg.MainButton.showProgress(false);
+        submitBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('title', titleInput.value.trim());
+            formData.append('author', authorInput.value.trim());
+            formData.append('date', dateInput.value);
+            formData.append('tags', tagsInput.value.trim());
+            formData.append('description', descriptionInput.value.trim());
+
+            if (selectedFile) {
+                formData.append('photo', selectedFile);
             }
 
-            // Показываем индикатор загрузки
-            tg.showPopup({
-                title: 'Отправка',
-                message: 'Фото отправляется...',
-                buttons: []
-            }, function() {});
+            formData.append('user', JSON.stringify(tg.initDataUnsafe.user));
 
-            // Здесь будет код отправки на сервер
-            sendPhotoToChannel(selectedFile, captionInput.value);
-        });
+            // Отправка данных на сервер
+            const response = await fetch('YOUR_SERVER_ENDPOINT', {
+                method: 'POST',
+                body: formData
+            });
 
-        // Функция отправки фото на сервер
-        async function sendPhotoToChannel(file, caption) {
-            // В реальном приложении здесь будет запрос к вашему серверу
-            // который отправит фото в Telegram канал через Bot API
+            const result = await response.json();
 
-            try {
-                // Пример реализации с использованием FormData
-                const formData = new FormData();
-                formData.append('photo', file);
-                formData.append('caption', caption);
-                formData.append('user_id', tg.initDataUnsafe.user?.id || '');
-
-                // Отправляем данные на ваш сервер
-                const response = await fetch('YOUR_SERVER_ENDPOINT', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.ok) {
-                    tg.showPopup({
-                        title: 'Успех',
-                        message: 'Фото успешно отправлено в канал!',
-                        buttons: [{ type: 'ok' }]
-                    }, function() {
-                        tg.close();
-                    });
-                } else {
-                    throw new Error(result.error || 'Неизвестная ошибка');
-                }
-            } catch (error) {
+            if (result.ok) {
                 tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось отправить фото: ' + error.message,
+                    title: 'Успех',
+                    message: 'Фотосъемка успешно отправлена!',
                     buttons: [{ type: 'ok' }]
-                }, function() {});
+                }, () => tg.close());
+            } else {
+                throw new Error(result.error || 'Неизвестная ошибка');
             }
+        } catch (error) {
+            showError('Ошибка при отправке: ' + error.message);
+            submitBtn.disabled = false;
+        } finally {
+            tg.MainButton.hideProgress();
         }
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', () => {
+        tg.ready();
+        // Устанавливаем текущую дату по умолчанию
+        dateInput.valueAsDate = new Date();
     });
 </script>
 </body>

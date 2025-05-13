@@ -82,28 +82,36 @@
         }
 
         .preview-container {
-            position: relative;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
             margin-bottom: 20px;
-            display: none;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 1;
         }
 
         .preview-image {
-            max-width: 100%;
-            border-radius: 8px;
-            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .remove-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 5px;
+            right: 5px;
             background-color: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 16px;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
             cursor: pointer;
         }
 
@@ -130,6 +138,13 @@
             font-size: 14px;
             margin-top: 5px;
             display: none;
+        }
+
+        .counter {
+            text-align: right;
+            font-size: 14px;
+            color: var(--hint-color);
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -168,17 +183,16 @@
 
         <!-- Загрузка фото -->
         <div class="form-group">
-            <label>Фото</label>
+            <label>Фото (максимум 10)</label>
             <div id="uploadArea" class="upload-area">
                 <div>📷</div>
                 <p>Нажмите для выбора фото или перетащите сюда</p>
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
             </div>
 
-            <div id="previewContainer" class="preview-container">
-                <img id="previewImage" class="preview-image" alt="Предпросмотр">
-                <button type="button" id="removeBtn" class="remove-btn">×</button>
-            </div>
+            <div id="counter" class="counter">Выбрано фото: 0/10</div>
+
+            <div id="previewContainer" class="preview-container"></div>
         </div>
 
         <button type="submit" id="submitBtn" class="submit-btn" disabled>Отправить</button>
@@ -191,6 +205,9 @@
     tg.expand();
     tg.enableClosingConfirmation();
 
+    // Конфигурация
+    const MAX_PHOTOS = 10; // Максимальное количество фото
+
     // Элементы DOM
     const form = document.getElementById('photoForm');
     const titleInput = document.getElementById('titleInput');
@@ -201,18 +218,16 @@
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const removeBtn = document.getElementById('removeBtn');
     const submitBtn = document.getElementById('submitBtn');
     const titleError = document.getElementById('titleError');
+    const counter = document.getElementById('counter');
 
     // Состояние приложения
-    let selectedFile = null;
+    let selectedFiles = [];
 
     // Обработчики событий
     uploadArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
-    removeBtn.addEventListener('click', removeSelectedFile);
+    fileInput.addEventListener('change', handleFilesSelect);
     titleInput.addEventListener('input', validateForm);
     form.addEventListener('submit', submitForm);
 
@@ -231,53 +246,84 @@
         uploadArea.style.borderColor = 'var(--hint-color)';
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;
-            handleFileSelect({ target: fileInput });
+            handleFilesSelect({ target: fileInput });
         }
     });
 
     // Функции
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    function handleFilesSelect(event) {
+        const files = Array.from(event.target.files);
 
-        if (!file.type.match('image.*')) {
-            showError('Пожалуйста, выберите изображение');
+        // Проверка количества фото
+        if (selectedFiles.length + files.length > MAX_PHOTOS) {
+            showError(`Можно загрузить не более ${MAX_PHOTOS} фото`);
             return;
         }
 
-        if (file.size > 10 * 1024 * 1024) {
-            showError('Размер файла не должен превышать 10 МБ');
+        // Фильтрация только изображений
+        const imageFiles = files.filter(file => file.type.match('image.*'));
+
+        if (imageFiles.length === 0) {
+            showError('Пожалуйста, выберите изображения');
             return;
         }
 
-        selectedFile = file;
+        // Проверка размера файлов
+        const oversizedFiles = imageFiles.filter(file => file.size > 10 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            showError(`Некоторые файлы превышают 10 МБ: ${oversizedFiles.map(f => f.name).join(', ')}`);
+            return;
+        }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewImage.src = e.target.result;
-            previewContainer.style.display = 'block';
-            uploadArea.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-
+        // Добавление новых файлов
+        selectedFiles = [...selectedFiles, ...imageFiles].slice(0, MAX_PHOTOS);
+        updatePreviews();
         validateForm();
     }
 
-    function removeSelectedFile() {
-        selectedFile = null;
-        fileInput.value = '';
-        previewContainer.style.display = 'none';
-        uploadArea.style.display = 'block';
+    function updatePreviews() {
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+
+                const img = document.createElement('img');
+                img.className = 'preview-image';
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removePhoto(index);
+
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                previewContainer.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        counter.textContent = `Выбрано фото: ${selectedFiles.length}/${MAX_PHOTOS}`;
+        uploadArea.style.display = selectedFiles.length >= MAX_PHOTOS ? 'none' : 'block';
+    }
+
+    function removePhoto(index) {
+        selectedFiles.splice(index, 1);
+        updatePreviews();
         validateForm();
     }
 
     function validateForm() {
         const isTitleValid = titleInput.value.trim().length > 0;
+        const hasPhotos = selectedFiles.length > 0;
 
         titleError.style.display = isTitleValid ? 'none' : 'block';
-        submitBtn.disabled = !isTitleValid;
+        submitBtn.disabled = !(isTitleValid && hasPhotos);
 
-        return isTitleValid;
+        return isTitleValid && hasPhotos;
     }
 
     function showError(message) {
@@ -304,11 +350,13 @@
             formData.append('tags', tagsInput.value.trim());
             formData.append('description', descriptionInput.value.trim());
 
-            if (selectedFile) {
-                formData.append('photo', selectedFile);
-            }
+            // Добавляем все фото
+            selectedFiles.forEach((file, index) => {
+                formData.append(`photos_${index}`, file);
+            });
 
             formData.append('user', JSON.stringify(tg.initDataUnsafe.user));
+            formData.append('photo_count', selectedFiles.length);
 
             // Отправка данных на сервер
             const response = await fetch('YOUR_SERVER_ENDPOINT', {
@@ -321,7 +369,7 @@
             if (result.ok) {
                 tg.showPopup({
                     title: 'Успех',
-                    message: 'Фотосъемка успешно отправлена!',
+                    message: `Фотосъемка успешно отправлена! Загружено ${selectedFiles.length} фото.`,
                     buttons: [{ type: 'ok' }]
                 }, () => tg.close());
             } else {

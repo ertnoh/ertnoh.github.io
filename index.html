@@ -67,6 +67,10 @@
             resize: vertical;
         }
 
+        .hidden-field {
+            display: none;
+        }
+
         .upload-area {
             border: 2px dashed var(--hint-color);
             border-radius: 12px;
@@ -153,14 +157,16 @@
     <h1>Добавить фотосъемку</h1>
 
     <form id="photoForm">
-        <!-- Обязательное поле -->
+        <!-- Скрытые поля с данными пользователя -->
+        <input type="hidden" id="userId" name="user_id" class="hidden-field">
+        <input type="hidden" id="username" name="username" class="hidden-field">
+
         <div class="form-group">
             <label for="titleInput" class="required">Название съемки</label>
             <input type="text" id="titleInput" placeholder="Введите название съемки" required>
             <div id="titleError" class="error-message">Это поле обязательно для заполнения</div>
         </div>
 
-        <!-- Необязательные поля -->
         <div class="form-group">
             <label for="authorInput">Автор</label>
             <input type="text" id="authorInput" placeholder="Имя автора (необязательно)">
@@ -181,7 +187,6 @@
             <textarea id="descriptionInput" placeholder="Добавьте описание съемки (необязательно)"></textarea>
         </div>
 
-        <!-- Загрузка фото -->
         <div class="form-group">
             <label>Фото (максимум 10)</label>
             <div id="uploadArea" class="upload-area">
@@ -221,9 +226,24 @@
     const submitBtn = document.getElementById('submitBtn');
     const titleError = document.getElementById('titleError');
     const counter = document.getElementById('counter');
+    const userIdField = document.getElementById('userId');
+    const usernameField = document.getElementById('username');
 
     // Состояние приложения
     let selectedFiles = [];
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', () => {
+        tg.ready();
+
+        // Заполняем данные пользователя
+        const user = tg.initDataUnsafe.user || {};
+        userIdField.value = user.id || '';
+        usernameField.value = user.username || '';
+
+        // Устанавливаем текущую дату по умолчанию
+        dateInput.valueAsDate = new Date();
+    });
 
     // Обработчики событий
     uploadArea.addEventListener('click', () => fileInput.click());
@@ -343,20 +363,12 @@
         submitBtn.disabled = true;
 
         try {
-            const formData = new FormData();
-            formData.append('title', titleInput.value.trim());
-            formData.append('author', authorInput.value.trim());
-            formData.append('date', dateInput.value);
-            formData.append('tags', tagsInput.value.trim());
-            formData.append('description', descriptionInput.value.trim());
+            const formData = new FormData(form);
 
-            // Добавляем все фото
+            // Добавляем все фото отдельно (для совместимости)
             selectedFiles.forEach((file, index) => {
                 formData.append(`photos_${index}`, file);
             });
-
-            formData.append('user', JSON.stringify(tg.initDataUnsafe.user));
-            formData.append('photo_count', selectedFiles.length);
 
             // Отправка данных на сервер
             const response = await fetch('YOUR_SERVER_ENDPOINT', {
@@ -382,13 +394,6 @@
             tg.MainButton.hideProgress();
         }
     }
-
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', () => {
-        tg.ready();
-        // Устанавливаем текущую дату по умолчанию
-        dateInput.valueAsDate = new Date();
-    });
 </script>
 </body>
 </html>

@@ -368,9 +368,9 @@
             formData.append('author', authorInput.value.trim());
             formData.append('date', dateInput.value);
             formData.append('tags', tagsInput.value.trim());
-            formData.append('userId', descriptionInput.value.trim());
-            formData.append('username', userIdField.value.trim());
-            formData.append('description', usernameField.value.trim());
+            formData.append('userId', userIdField.value.trim());
+            formData.append('username', usernameField.value.trim());
+            formData.append('description', descriptionInput.value.trim());
 
             // Добавляем все фото отдельно (для совместимости)
             selectedFiles.forEach((file, index) => {

@@ -239,7 +239,7 @@
         // Заполняем данные пользователя
         const user = tg.initDataUnsafe.user || {};
         userIdField.value = user.id || '';
-        usernameField.value = user.username || '';
+        usernameField.value = user.name || '';
 
         // Устанавливаем текущую дату по умолчанию
         dateInput.valueAsDate = new Date();

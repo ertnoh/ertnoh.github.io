@@ -376,9 +376,10 @@
             selectedFiles.forEach((file, index) => {
                 formData.append(`photos_${index}`, file);
             });
-            
+
+            const httpsDomen = 'https://v71lw1-85-172-77-38.ru.tuna.am';
             const api = '/tg1/telegram/webhook';
-            const url = api;
+            const url = httpsDomen + api;
 
             // Отправка данных на сервер
             const response = await fetch(url, {

@@ -174,7 +174,7 @@
 
         <div class="form-group">
             <label for="dateInput">Дата съемки</label>
-            <input type="text" id="dateInput" placeholder="дд.мм.гггг" pattern="\d{2}\.\d{2}\.\d{4}">
+            <input type="date" id="dateInput">
         </div>
 
         <div class="form-group">
@@ -241,12 +241,8 @@
         userIdField.value = user.id || '';
         usernameField.value = user.username ? `@${user.username}` : '';
 
-        // Устанавливаем текущую дату по умолчанию в формате d.m.Y
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        dateInput.value = `${day}.${month}.${year}`;
+        // Устанавливаем текущую дату по умолчанию
+        dateInput.valueAsDate = new Date();
     });
 
     // Обработчики событий

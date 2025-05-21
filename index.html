@@ -371,6 +371,10 @@
             formData.append('userId', userIdField.value.trim());
             formData.append('username', usernameField.value.trim());
             formData.append('description', descriptionInput.value.trim());
+            // Добавляем ВСЕ выбранные файлы
+            selectedFiles.forEach((file, index) => {
+                formData.append('files[]', file);
+            });
 
             // Добавляем все фото отдельно (для совместимости)
             selectedFiles.forEach((file, index) => {

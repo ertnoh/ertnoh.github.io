@@ -371,17 +371,13 @@
             formData.append('userId', userIdField.value.trim());
             formData.append('username', usernameField.value.trim());
             formData.append('description', descriptionInput.value.trim());
-            // Добавляем ВСЕ выбранные файлы
+
+           // Добавляем ВСЕ выбранные файлы
             selectedFiles.forEach((file, index) => {
-                formData.append('files[]', file);
+                formData.append(`files[${index}]`, file);
             });
 
-            // Добавляем все фото отдельно (для совместимости)
-            selectedFiles.forEach((file, index) => {
-                formData.append(`photos_${index}`, file);
-            });
-
-            const httpsDomen = 'https://hunn6s-85-172-77-38.ru.tuna.am';
+            const httpsDomen = 'https://83mgad-85-172-77-38.ru.tuna.am';
             const api = '/tg1/telegram/webhook';
             const url = httpsDomen + api;
 

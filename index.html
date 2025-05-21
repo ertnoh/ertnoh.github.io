@@ -374,7 +374,7 @@
 
            // Добавляем ВСЕ выбранные файлы
             selectedFiles.forEach((file, index) => {
-                formData.append(`files[${index}]`, file);
+                formData.append(`files[${index}]`, file); // Ключевая разница - квадратные скобки
             });
 
             const httpsDomen = 'https://83mgad-85-172-77-38.ru.tuna.am';

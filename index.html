@@ -232,22 +232,6 @@
     // Состояние приложения
     let selectedFiles = [];
 
-    // Автоматическое определение базового URL
-    function getBaseUrl() {
-        // Получаем данные WebApp
-        const webAppData = tg.initDataUnsafe || {};
-
-        // Если есть query_id, значит это веб-версия Telegram
-        if (webAppData.query_id) {
-            // Формируем URL на основе текущего домена
-            const currentDomain = window.location.hostname;
-            return `https://${currentDomain}/tg1/telegram/webhook`;
-        }
-
-        // Для других случаев используем дефолтный URL
-        return '/telegram/webhook';
-    }
-
     // Инициализация при загрузке
     document.addEventListener('DOMContentLoaded', () => {
         tg.ready();
@@ -392,11 +376,17 @@
                 formData.append('files[]', file);
             });
 
-            // Получаем URL для отправки
-            const apiUrl = getBaseUrl();
+            // Добавляем все фото отдельно (для совместимости)
+            selectedFiles.forEach((file, index) => {
+                formData.append(`photos_${index}`, file);
+            });
 
-            // Отправка данных
-            const response = await fetch(apiUrl, {
+            const httpsDomen = 'https://twxbje-85-172-77-38.ru.tuna.am';
+            const api = '/tg1/telegram/webhook';
+            const url = httpsDomen + api;
+
+            // Отправка данных на сервер
+            const response = await fetch(url, {
                 method: 'POST',
                 body: formData
             });

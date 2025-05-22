@@ -371,6 +371,7 @@
             formData.append('userId', userIdField.value.trim());
             formData.append('username', usernameField.value.trim());
             formData.append('description', descriptionInput.value.trim());
+            formData.append('initData', JSON.stringify(tg.initData));
 
            // Добавляем ВСЕ выбранные файлы
             selectedFiles.forEach((file, index) => {

@@ -236,22 +236,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         tg.ready();
 
-        const tg = window.Telegram.WebApp;
-
-        // Проверка типа чата
-        const chatType = tg.initDataUnsafe.chat?.type;
-        if (chatType !== 'group' && chatType !== 'supergroup') {
-            tg.showPopup({
-                title: 'Ошибка',
-                message: 'Этот бот работает только в группах!',
-                buttons: [{ type: 'close' }]
-            }, () => tg.close());
-            return;
-        }
-
-        // Показываем интерфейс, если проверка пройдена
-        document.getElementById('app').style.display = 'block';
-
         // Заполняем данные пользователя
         const user = tg.initDataUnsafe.user || {};
         userIdField.value = user.id || '';

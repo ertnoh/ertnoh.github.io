@@ -160,7 +160,6 @@
         <!-- Скрытые поля с данными пользователя -->
         <input type="hidden" id="userId" name="userId" class="hidden-field">
         <input type="hidden" id="username" name="username" class="hidden-field">
-        <input type="hidden" id="chatId" name="chatId" class="hidden-field">
 
         <div class="form-group">
             <label for="titleInput" class="required">Название съемки</label>
@@ -229,7 +228,6 @@
     const counter = document.getElementById('counter');
     const userIdField = document.getElementById('userId');
     const usernameField = document.getElementById('username');
-    const chatId = document.getElementById('chatId');
 
     // Состояние приложения
     let selectedFiles = [];
@@ -240,11 +238,8 @@
 
         // Заполняем данные пользователя
         const user = tg.initDataUnsafe.user || {};
-        const chat = tg.initDataUnsafe.chat || {};
-        const urlParams = new URLSearchParams(window.location.search);
         userIdField.value = user.id || '';
         usernameField.value = user.username ? `@${user.username}` : '';
-        chatId.value = chat.id || urlParams.get('chat_id') || '';
 
         // Устанавливаем текущую дату по умолчанию
         dateInput.valueAsDate = new Date();
@@ -376,7 +371,6 @@
             formData.append('userId', userIdField.value.trim());
             formData.append('username', usernameField.value.trim());
             formData.append('description', descriptionInput.value.trim());
-            formData.append('chatId', chatId.value.trim());
             formData.append('initData', JSON.stringify(tg.initData));
 
            // Добавляем ВСЕ выбранные файлы

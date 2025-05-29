@@ -241,9 +241,10 @@
         // Заполняем данные пользователя
         const user = tg.initDataUnsafe.user || {};
         const chat = tg.initDataUnsafe.chat || {};
+        const urlParams = new URLSearchParams(window.location.search);
         userIdField.value = user.id || '';
         usernameField.value = user.username ? `@${user.username}` : '';
-        chatId.value = chat.id || '';
+        chatId.value = chat.id || urlParams.get('chat_id') || '';
 
         // Устанавливаем текущую дату по умолчанию
         dateInput.valueAsDate = new Date();

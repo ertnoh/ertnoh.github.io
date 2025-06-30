@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Форма загрузки фотосъемки</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -16,7 +16,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+            Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -47,11 +48,13 @@
         }
 
         .required:after {
-            content: " *";
+            content: ' *';
             color: var(--error-color);
         }
 
-        input, textarea, select {
+        input,
+        textarea,
+        select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--hint-color);
@@ -150,6 +153,69 @@
             color: var(--hint-color);
             margin-top: 5px;
         }
+
+        /* Стили для логов */
+        .debug-section {
+            border-top: 1px solid var(--hint-color);
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        .debug-log {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .clear-log-btn {
+            margin: 8px 0;
+            padding: 6px 12px;
+            border: 1px solid var(--hint-color);
+            border-radius: 4px;
+            font-size: 12px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .log-toggle {
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .log-toggle:before {
+            content: '▼ ';
+            color: var(--hint-color);
+        }
+
+        .log-toggle.collapsed:before {
+            content: '▶ ';
+        }
+
+        .debug-content {
+            transition: max-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .debug-content.collapsed {
+            max-height: 0;
+        }
+
+        .show-logs-btn {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -158,28 +224,47 @@
 
     <form id="photoForm">
         <!-- Скрытые поля с данными пользователя -->
-        <input type="hidden" id="userId" name="userId" class="hidden-field">
-        <input type="hidden" id="username" name="username" class="hidden-field">
+        <input type="hidden" id="userId" name="userId" class="hidden-field" />
+        <input
+                type="hidden"
+                id="username"
+                name="username"
+                class="hidden-field"
+        />
 
         <div class="form-group">
             <label for="titleInput" class="required">Название съемки</label>
-            <input type="text" id="titleInput" placeholder="Введите название съемки" required>
-            <div id="titleError" class="error-message">Это поле обязательно для заполнения</div>
+            <input
+                    type="text"
+                    id="titleInput"
+                    placeholder="Введите название съемки"
+                    required
+            />
+            <div id="titleError" class="error-message">
+                Это поле обязательно для заполнения
+            </div>
         </div>
 
         <div class="form-group">
             <label for="authorInput">Автор</label>
-            <input type="text" id="authorInput" placeholder="Имя автора (необязательно)">
+            <input
+                    type="text"
+                    id="authorInput"
+                    placeholder="Имя автора (необязательно)"
+            />
         </div>
 
         <div class="form-group">
             <label for="dateInput">Дата съемки</label>
-            <input type="date" id="dateInput">
+            <input type="date" id="dateInput" />
         </div>
 
         <div class="form-group">
             <label for="descriptionInput">Описание</label>
-            <textarea id="descriptionInput" placeholder="Добавьте описание съемки (необязательно)"></textarea>
+            <textarea
+                    id="descriptionInput"
+                    placeholder="Добавьте описание съемки (необязательно)"
+            ></textarea>
         </div>
 
         <div class="form-group">
@@ -187,7 +272,13 @@
             <div id="uploadArea" class="upload-area">
                 <div>📷</div>
                 <p>Нажмите для выбора фото или перетащите сюда</p>
-                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                <input
+                        type="file"
+                        id="fileInput"
+                        accept="image/*"
+                        multiple
+                        style="display: none"
+                />
             </div>
 
             <div id="counter" class="counter">Выбрано фото: 0/10</div>
@@ -195,18 +286,67 @@
             <div id="previewContainer" class="preview-container"></div>
         </div>
 
-        <button type="submit" id="submitBtn" class="submit-btn" disabled>Отправить</button>
+        <button type="submit" id="submitBtn" class="submit-btn" disabled>
+            Отправить
+        </button>
+
+        <!-- Кнопка для показа логов в Telegram -->
+        <button type="button" id="showLogsBtn" class="submit-btn show-logs-btn">
+            📋 Показать логи
+        </button>
     </form>
+
+    <!-- Секция логов -->
+    <div class="debug-section">
+        <div class="log-toggle" id="logToggle">Логи отладки</div>
+        <div class="debug-content" id="debugContent">
+            <button class="clear-log-btn" id="clearLogBtn">Очистить лог</button>
+            <div id="debugLog" class="debug-log">Инициализация...\n</div>
+        </div>
+    </div>
 </div>
 
 <script>
+    // Система логирования
+    let logBuffer = []
+    let logElement = null
+
+    function initializeLog() {
+        logElement = document.getElementById('debugLog')
+        if (logElement && logBuffer.length > 0) {
+            logElement.textContent = logBuffer.join('')
+            logBuffer = []
+        }
+    }
+
+    function log(...args) {
+        const msg = args
+            .map(a => (typeof a === 'object' ? JSON.stringify(a, null, 2) : a))
+            .join(' ')
+
+        const timeStr = new Date().toLocaleTimeString()
+        const logLine = `[${timeStr}] ${msg}\n`
+
+        if (logElement) {
+            logElement.textContent += logLine
+            logElement.scrollTop = logElement.scrollHeight
+        } else {
+            logBuffer.push(logLine)
+        }
+    }
+
     // Инициализация Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.enableClosingConfirmation();
+    const tg = window.Telegram.WebApp
+    tg.expand()
+    tg.enableClosingConfirmation()
+
+    log('[TG] WebApp ready')
+    log('[TG] Версия:', tg.version, 'Платформа:', tg.platform)
+    log('[TG] initData:', tg.initData || 'ПУСТАЯ')
+    log('[TG] initDataUnsafe:', tg.initDataUnsafe)
 
     // Конфигурация
-    const MAX_PHOTOS = 10; // Максимальное количество фото
+    const MAX_PHOTOS = 10 // Максимальное количество фото
 
     // Элементы DOM
     const form = document.getElementById('photoForm');
@@ -222,183 +362,281 @@
     const counter = document.getElementById('counter');
     const userIdField = document.getElementById('userId');
     const usernameField = document.getElementById('username');
+    const showLogsBtn = document.getElementById('showLogsBtn');
 
     // Состояние приложения
-    let selectedFiles = [];
+    let selectedFiles = []
 
     // Инициализация при загрузке
     document.addEventListener('DOMContentLoaded', () => {
-        tg.ready();
+        // Инициализация логирования
+        initializeLog()
+
+        // Настройка переключения видимости логов
+        const logToggle = document.getElementById('logToggle')
+        const debugContent = document.getElementById('debugContent')
+        const clearLogBtn = document.getElementById('clearLogBtn')
+
+        logToggle.addEventListener('click', function () {
+            debugContent.classList.toggle('collapsed')
+            logToggle.classList.toggle('collapsed')
+        })
+
+        clearLogBtn.addEventListener('click', function () {
+            if (logElement) {
+                logElement.textContent = ''
+            }
+            log('Лог очищен')
+        })
+
+        // Кнопка показа логов для Telegram
+        showLogsBtn.addEventListener('click', function () {
+            const logText = logElement
+                ? logElement.textContent
+                : logBuffer.join('')
+            if (logText.trim()) {
+                if (typeof tg.showPopup === 'function') {
+                    // В Telegram показываем через popup (ограничено по длине)
+                    const shortLog = logText.split('\n').slice(-15).join('\n') // Последние 15 строк
+                    tg.showPopup({
+                        title: 'Логи отладки',
+                        message: shortLog || 'Логи пусты',
+                        buttons: [{ type: 'ok' }],
+                    })
+                } else {
+                    // В браузере через alert
+                    alert(logText || 'Логи пусты')
+                }
+            } else {
+                if (typeof tg.showPopup === 'function') {
+                    tg.showPopup({
+                        title: 'Логи',
+                        message: 'Логи пусты',
+                        buttons: [{ type: 'ok' }],
+                    })
+                } else {
+                    alert('Логи пусты')
+                }
+            }
+        })
+
+        tg.ready()
 
         // Заполняем данные пользователя
-        const user = tg.initDataUnsafe.user || {};
-        userIdField.value = user.id || '';
-        usernameField.value = user.username ? `@${user.username}` : '';
+        const user = tg.initDataUnsafe.user || {}
+        log('[USER] Данные пользователя:', user)
+
+        userIdField.value = user.id || ''
+        usernameField.value = user.username ? `@${user.username}` : ''
+
+        log('[USER] Заполнены поля:', {
+            userId: userIdField.value,
+            username: usernameField.value,
+        })
 
         // Устанавливаем текущую дату по умолчанию
-        dateInput.valueAsDate = new Date();
-    });
+        dateInput.valueAsDate = new Date()
+
+        log('[INIT] Форма инициализирована')
+    })
 
     // Обработчики событий
-    uploadArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFilesSelect);
-    titleInput.addEventListener('input', validateForm);
-    form.addEventListener('submit', submitForm);
+    uploadArea.addEventListener('click', () => fileInput.click())
+    fileInput.addEventListener('change', handleFilesSelect)
+    titleInput.addEventListener('input', validateForm)
+    form.addEventListener('submit', submitForm)
 
     // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = 'var(--button-color)';
-    });
+    uploadArea.addEventListener('dragover', e => {
+        e.preventDefault()
+        uploadArea.style.borderColor = 'var(--button-color)'
+    })
 
     uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = 'var(--hint-color)';
-    });
+        uploadArea.style.borderColor = 'var(--hint-color)'
+    })
 
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = 'var(--hint-color)';
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault()
+        uploadArea.style.borderColor = 'var(--hint-color)'
         if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            handleFilesSelect({ target: fileInput });
+            fileInput.files = e.dataTransfer.files
+            handleFilesSelect({ target: fileInput })
         }
-    });
+    })
 
     // Функции
     function handleFilesSelect(event) {
-        const files = Array.from(event.target.files);
+        const files = Array.from(event.target.files)
+        log(
+            '[FILES] Выбраны файлы:',
+            files.map(f => f.name),
+        )
 
         // Проверка количества фото
         if (selectedFiles.length + files.length > MAX_PHOTOS) {
-            showError(`Можно загрузить не более ${MAX_PHOTOS} фото`);
-            return;
+            showError(`Можно загрузить не более ${MAX_PHOTOS} фото`)
+            return
         }
 
         // Фильтрация только изображений
-        const imageFiles = files.filter(file => file.type.match('image.*'));
+        const imageFiles = files.filter(file => file.type.match('image.*'))
 
         if (imageFiles.length === 0) {
-            showError('Пожалуйста, выберите изображения');
-            return;
+            showError('Пожалуйста, выберите изображения')
+            return
         }
 
         // Проверка размера файлов
-        const oversizedFiles = imageFiles.filter(file => file.size > 10 * 1024 * 1024);
+        const oversizedFiles = imageFiles.filter(
+            file => file.size > 10 * 1024 * 1024,
+        )
         if (oversizedFiles.length > 0) {
-            showError(`Некоторые файлы превышают 10 МБ: ${oversizedFiles.map(f => f.name).join(', ')}`);
-            return;
+            showError(
+                `Некоторые файлы превышают 10 МБ: ${oversizedFiles
+                    .map(f => f.name)
+                    .join(', ')}`,
+            )
+            return
         }
 
         // Добавление новых файлов
-        selectedFiles = [...selectedFiles, ...imageFiles].slice(0, MAX_PHOTOS);
-        updatePreviews();
-        validateForm();
+        selectedFiles = [...selectedFiles, ...imageFiles].slice(0, MAX_PHOTOS)
+        log(
+            '[FILES] Добавлены изображения:',
+            selectedFiles.map(f => `${f.name} (${f.size} bytes)`),
+        )
+        updatePreviews()
+        validateForm()
     }
 
     function updatePreviews() {
-        previewContainer.innerHTML = '';
+        previewContainer.innerHTML = ''
 
         selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item';
+            const reader = new FileReader()
+            reader.onload = function (e) {
+                const previewItem = document.createElement('div')
+                previewItem.className = 'preview-item'
 
-                const img = document.createElement('img');
-                img.className = 'preview-image';
-                img.src = e.target.result;
+                const img = document.createElement('img')
+                img.className = 'preview-image'
+                img.src = e.target.result
 
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.innerHTML = '×';
-                removeBtn.onclick = () => removePhoto(index);
+                const removeBtn = document.createElement('button')
+                removeBtn.className = 'remove-btn'
+                removeBtn.innerHTML = '×'
+                removeBtn.onclick = () => removePhoto(index)
 
-                previewItem.appendChild(img);
-                previewItem.appendChild(removeBtn);
-                previewContainer.appendChild(previewItem);
-            };
-            reader.readAsDataURL(file);
-        });
+                previewItem.appendChild(img)
+                previewItem.appendChild(removeBtn)
+                previewContainer.appendChild(previewItem)
+            }
+            reader.readAsDataURL(file)
+        })
 
-        counter.textContent = `Выбрано фото: ${selectedFiles.length}/${MAX_PHOTOS}`;
-        uploadArea.style.display = selectedFiles.length >= MAX_PHOTOS ? 'none' : 'block';
+        counter.textContent = `Выбрано фото: ${selectedFiles.length}/${MAX_PHOTOS}`
+        uploadArea.style.display =
+            selectedFiles.length >= MAX_PHOTOS ? 'none' : 'block'
     }
 
     function removePhoto(index) {
-        selectedFiles.splice(index, 1);
-        updatePreviews();
-        validateForm();
+        log('[FILES] Удален файл:', selectedFiles[index].name)
+        selectedFiles.splice(index, 1)
+        updatePreviews()
+        validateForm()
     }
 
     function validateForm() {
-        const isTitleValid = titleInput.value.trim().length > 0;
-        const hasPhotos = selectedFiles.length > 0;
+        const isTitleValid = titleInput.value.trim().length > 0
+        const hasPhotos = selectedFiles.length > 0
 
-        titleError.style.display = isTitleValid ? 'none' : 'block';
-        submitBtn.disabled = !(isTitleValid && hasPhotos);
+        titleError.style.display = isTitleValid ? 'none' : 'block'
+        submitBtn.disabled = !(isTitleValid && hasPhotos)
 
-        return isTitleValid && hasPhotos;
+        return isTitleValid && hasPhotos
     }
 
     function showError(message) {
+        log('[ERROR]', message)
         tg.showPopup({
             title: 'Ошибка',
             message: message,
-            buttons: [{ type: 'ok' }]
-        });
+            buttons: [{ type: 'ok' }],
+        })
     }
 
     async function submitForm(e) {
-        e.preventDefault();
+        e.preventDefault()
 
-        if (!validateForm()) return;
+        if (!validateForm()) return
 
-        tg.MainButton.showProgress(false);
-        submitBtn.disabled = true;
+        log('[SUBMIT] Начинаем отправку формы')
+        tg.MainButton.showProgress(false)
+        submitBtn.disabled = true
 
         try {
-            const formData = new FormData(form);
-            formData.append('title', titleInput.value.trim());
-            formData.append('author', authorInput.value.trim());
-            formData.append('date', dateInput.value);
-            formData.append('userId', userIdField.value.trim());
-            formData.append('username', usernameField.value.trim());
-            formData.append('description', descriptionInput.value.trim());
-            formData.append('initData', JSON.stringify(tg.initData));
+            const formData = new FormData(form)
+            formData.append('title', titleInput.value.trim())
+            formData.append('author', authorInput.value.trim())
+            formData.append('date', dateInput.value)
+            formData.append('userId', userIdField.value.trim())
+            formData.append('username', usernameField.value.trim())
+            formData.append('description', descriptionInput.value.trim())
+            formData.append('initData', JSON.stringify(tg.initData))
 
-           // Добавляем ВСЕ выбранные файлы
+            // Добавляем ВСЕ выбранные файлы
             selectedFiles.forEach((file, index) => {
-                formData.append(`files[${index}]`, file); // Ключевая разница - квадратные скобки
-            });
+                formData.append(`files[${index}]`, file) // Ключевая разница - квадратные скобки
+            })
 
-            const httpsDomen = 'https://mjucl0-85-172-111-35.ru.tuna.am';
-            const api = '/tg1/telegram/webhook/photo';
-            const url = httpsDomen + api;
+            log('[FORMDATA] Подготовка данных для отправки:')
+            for (let [key, value] of formData.entries()) {
+                log(
+                    `${key}:`,
+                    value instanceof File
+                        ? `FILE: ${value.name} (${value.size} bytes)`
+                        : value,
+                )
+            }
+
+            const url =
+                'https://dev-api-photobank.nmgdev.ru/tg1/telegram/webhook/photo'
+
+            log('[REQUEST] Отправляем запрос на:', url)
 
             // Отправка данных на сервер
             const response = await fetch(url, {
                 method: 'POST',
-                body: formData
-            });
+                body: formData,
+            })
 
-            const result = await response.json();
+            log('[RESPONSE] Status:', response.status, 'OK:', response.ok)
+
+            const result = await response.json()
+            log('[RESPONSE] Data:', result)
 
             if (result.ok) {
-                tg.showPopup({
-                    title: 'Успех',
-                    message: `Фотосъемка успешно отправлена!`,
-                    buttons: [{ type: 'ok' }]
-                }, () => tg.close());
+                log('[SUCCESS] Фотосъемка успешно отправлена!')
+                tg.showPopup(
+                    {
+                        title: 'Успех',
+                        message: `Фотосъемка успешно отправлена!`,
+                        buttons: [{ type: 'ok' }],
+                    },
+                    () => tg.close(),
+                )
             } else {
-                throw new Error(result.error || 'Неизвестная ошибка');
+                throw new Error(result.error || 'Неизвестная ошибка')
             }
         } catch (error) {
-            showError('Ошибка при отправке: ' + error.message);
-            submitBtn.disabled = false;
+            log('[CATCH ERROR]', error.message)
+            log('[ERROR STACK]', error.stack)
+            showError('Ошибка при отправке: ' + error.message)
+            submitBtn.disabled = false
         } finally {
-            tg.MainButton.hideProgress();
+            tg.MainButton.hideProgress()
         }
-        
     }
 </script>
 </body>

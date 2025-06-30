@@ -178,11 +178,6 @@
         </div>
 
         <div class="form-group">
-            <label for="tagsInput">Теги</label>
-            <input type="text" id="tagsInput" placeholder="тег1, тег2, тег3 (необязательно)">
-        </div>
-
-        <div class="form-group">
             <label for="descriptionInput">Описание</label>
             <textarea id="descriptionInput" placeholder="Добавьте описание съемки (необязательно)"></textarea>
         </div>
@@ -218,7 +213,6 @@
     const titleInput = document.getElementById('titleInput');
     const authorInput = document.getElementById('authorInput');
     const dateInput = document.getElementById('dateInput');
-    const tagsInput = document.getElementById('tagsInput');
     const descriptionInput = document.getElementById('descriptionInput');
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
@@ -367,7 +361,6 @@
             formData.append('title', titleInput.value.trim());
             formData.append('author', authorInput.value.trim());
             formData.append('date', dateInput.value);
-            formData.append('tags', tagsInput.value.trim());
             formData.append('userId', userIdField.value.trim());
             formData.append('username', usernameField.value.trim());
             formData.append('description', descriptionInput.value.trim());
@@ -378,7 +371,7 @@
                 formData.append(`files[${index}]`, file); // Ключевая разница - квадратные скобки
             });
 
-            const httpsDomen = 'https://mi9hdp-94-25-68-186.ru.tuna.am';
+            const httpsDomen = 'https://mjucl0-85-172-111-35.ru.tuna.am';
             const api = '/tg1/telegram/webhook/photo';
             const url = httpsDomen + api;
 

@@ -577,13 +577,14 @@
 
         try {
             const formData = new FormData(form)
-            formData.append('title', titleInput.value.trim())
-            formData.append('author', authorInput.value.trim())
-            formData.append('date', dateInput.value)
-            formData.append('user_id', userIdField.value.trim())
-            formData.append('username', usernameField.value.trim())
-            formData.append('description', descriptionInput.value.trim())
-            formData.append('init_data', JSON.stringify(tg.initData))
+            formData.append('title', titleInput.value.trim());
+            formData.append('author', authorInput.value.trim());
+            formData.append('date', dateInput.value);
+            formData.append('user_id', userIdField.value.trim());
+            formData.append('username', usernameField.value.trim());
+            formData.append('description', descriptionInput.value.trim());
+            formData.append('init_data', JSON.stringify(tg.initData));
+            formData.append('album_id', "1");
 
             // Добавляем ВСЕ выбранные файлы
             selectedFiles.forEach((file, index) => {
